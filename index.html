@@ -43,19 +43,6 @@
             border-radius: 4px;
             box-sizing: border-box;
         }
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
         .result {
             margin-top: 20px;
             padding: 15px;
@@ -74,17 +61,16 @@
     <h2>EDD Calculator</h2>
     <div class="form-group">
         <label for="refDate">Reference Date (yyyy-mm-dd)</label>
-        <input type="text" id="refDate" placeholder="yyyy-mm-dd" pattern="\d{4}-\d{2}-\d{2}" required>
+        <input type="text" id="refDate" placeholder="yyyy-mm-dd" pattern="\d{4}-\d{2}-\d{2}" required oninput="calculateEDD()">
     </div>
     <div class="form-group">
         <label for="weeks">Weeks Pregnant</label>
-        <input type="number" id="weeks" min="0" max="42" placeholder="e.g., 12" required>
+        <input type="number" id="weeks" min="0" max="42" placeholder="e.g., 12" required oninput="calculateEDD()">
     </div>
     <div class="form-group">
         <label for="days">Days Pregnant</label>
-        <input type="number" id="days" min="0" max="6" placeholder="e.g., 3" required>
+        <input type="number" id="days" min="0" max="6" placeholder="e.g., 3" required oninput="calculateEDD()">
     </div>
-    <button onclick="calculateEDD()">Calculate EDD</button>
     <div class="result" id="resultDiv">
         <span id="eddOutput"></span>
     </div>
@@ -92,18 +78,19 @@
 
 <script>
     function calculateEDD() {
+        const resultDiv = document.getElementById('resultDiv');
         const dateInput = document.getElementById('refDate').value;
         const weeksInput = document.getElementById('weeks').value;
         const daysInput = document.getElementById('days').value;
         
         if (!dateInput || weeksInput === '' || daysInput === '') {
-            alert('Please fill in all fields.');
+            resultDiv.style.display = 'none';
             return;
         }
 
         const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
         if (!dateRegex.test(dateInput)) {
-            alert('Please enter the date in yyyy-mm-dd format.');
+            resultDiv.style.display = 'none';
             return;
         }
 
@@ -112,7 +99,7 @@
         // Or simply use new Date(dateInput + 'T00:00:00');
         const refDate = new Date(dateInput + 'T00:00:00');
         if (isNaN(refDate.getTime())) {
-            alert('Please enter a valid date.');
+            resultDiv.style.display = 'none';
             return;
         }
         const weeks = parseInt(weeksInput, 10);
@@ -136,7 +123,6 @@
         const day = String(eddDate.getDate()).padStart(2, '0');
         const formattedDate = `${year}-${month}-${day}`;
 
-        const resultDiv = document.getElementById('resultDiv');
         const eddOutput = document.getElementById('eddOutput');
 
         eddOutput.innerHTML = `Your Estimated Due Date is:<br><br><span style="color:#007BFF; font-size: 1.2em;">${formattedDate}</span>`;
