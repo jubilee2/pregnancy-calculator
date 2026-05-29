@@ -176,13 +176,9 @@
         eddDate.setDate(eddDate.getDate() + totalDaysToAdd);
 
         // Format output to match local date format
-        const year = eddDate.getFullYear();
-        // Setting { year: 'numeric', month: '2-digit', day: '2-digit' } 
-        const month = String(eddDate.getMonth() + 1).padStart(2, '0');
+        // Setting { year: 'numeric', month: '2-digit', day: '2-digit' }
         // to closely mimic how native date inputs often display.
-        const day = String(eddDate.getDate()).padStart(2, '0');
         const formattedDate = eddDate.toLocaleDateString(undefined, {
-        const formattedDate = `${year}-${month}-${day}`;
             year: 'numeric',
             month: '2-digit',
             day: '2-digit'
