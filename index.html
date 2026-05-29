@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDD Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="date"],
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+            color: #333;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>EDD Calculator</h2>
+    <div class="form-group">
+        <label for="refDate">Reference Date</label>
+        <input type="date" id="refDate" required>
+    </div>
+    <div class="form-group">
+        <label for="weeks">Weeks Pregnant</label>
+        <input type="number" id="weeks" min="0" max="42" placeholder="e.g., 12" required>
+    </div>
+    <div class="form-group">
+        <label for="days">Days Pregnant</label>
+        <input type="number" id="days" min="0" max="6" placeholder="e.g., 3" required>
+    </div>
+    <button onclick="calculateEDD()">Calculate EDD</button>
+    <div class="result" id="resultDiv">
+        <span id="eddOutput"></span>
+    </div>
+</div>
+
+<script>
+    function calculateEDD() {
+        const dateInput = document.getElementById('refDate').value;
+        const weeksInput = document.getElementById('weeks').value;
+        const daysInput = document.getElementById('days').value;
+        
+        if (!dateInput || weeksInput === '' || daysInput === '') {
+            alert('Please fill in all fields.');
+            return;
+        }
+
+        // When a date is parsed like "YYYY-MM-DD", it assumes UTC.
+        // It's safer to split the string or append time to avoid timezone offset issues.
+        // Or simply use new Date(dateInput + 'T00:00:00');
+        const refDate = new Date(dateInput + 'T00:00:00');
+        const weeks = parseInt(weeksInput, 10);
+        const days = parseInt(daysInput, 10);
+
+        // Calculate days to subtract: (week * 7 + days)
+        const daysPregnant = (weeks * 7) + days;
+        
+        // 40 weeks = 280 days
+        // Logic: date - (week*7 + days) + 40 weeks
+        // In days: date - daysPregnant + 280
+        const totalDaysToAdd = 280 - daysPregnant;
+
+        // Apply to date
+        const eddDate = new Date(refDate);
+        eddDate.setDate(eddDate.getDate() + totalDaysToAdd);
+
+        // Format output
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const formattedDate = eddDate.toLocaleDateString(undefined, options);
+
+        const resultDiv = document.getElementById('resultDiv');
+        const eddOutput = document.getElementById('eddOutput');
+
+        eddOutput.innerHTML = `Your Estimated Due Date is:<br><br><span style="color:#007BFF; font-size: 1.2em;">${formattedDate}</span>`;
+        resultDiv.style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
