@@ -28,28 +28,6 @@ remaining days = 280 - 87 = 193
 estimated due date = 2026-05-29 + 193 days
 ```
 
-## Getting Started
-
-### Run Locally
-
-No installation is required.
-
-1. Clone the repository:
-
-   ```bash
-   git clone <repository-url>
-   cd pregnancy-calculator
-   ```
-
-2. Open `index.html` in your browser.
-
-You can also serve the directory with any static file server, for example:
-
-```bash
-python3 -m http.server 8000
-```
-
-Then visit `http://localhost:8000`.
 
 ## Project Structure
 
