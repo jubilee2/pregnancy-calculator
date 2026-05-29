@@ -175,11 +175,14 @@
         const eddDate = new Date(refDate);
         eddDate.setDate(eddDate.getDate() + totalDaysToAdd);
 
-        // Format output to yyyy-mm-dd
-        const year = eddDate.getFullYear();
-        const month = String(eddDate.getMonth() + 1).padStart(2, '0');
-        const day = String(eddDate.getDate()).padStart(2, '0');
-        const formattedDate = `${year}-${month}-${day}`;
+        // Format output to match local date format
+        // Setting { year: 'numeric', month: '2-digit', day: '2-digit' }
+        // to closely mimic how native date inputs often display.
+        const formattedDate = eddDate.toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
 
         showResult(`Your Estimated Due Date is:<br><br><span style="color:#007BFF; font-size: 1.2em;">${formattedDate}</span>`);
     }
