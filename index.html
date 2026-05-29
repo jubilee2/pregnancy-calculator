@@ -43,18 +43,11 @@
             border-radius: 4px;
             box-sizing: border-box;
         }
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #0056b3;
+        .hint {
+            margin-top: 5px;
+            color: #666;
+            font-size: 0.9em;
+            text-align: center;
         }
         .result {
             margin-top: 20px;
@@ -84,43 +77,78 @@
         <label for="days">Days Pregnant</label>
         <input type="number" id="days" min="0" max="6" placeholder="e.g., 3" required>
     </div>
-    <button onclick="calculateEDD()">Calculate EDD</button>
-    <div class="result" id="resultDiv">
+    <p class="hint">Enter a reference date, weeks, and days to calculate automatically.</p>
+    <div class="result" id="resultDiv" aria-live="polite">
         <span id="eddOutput"></span>
     </div>
 </div>
 
 <script>
+    const refDateInput = document.getElementById('refDate');
+    const weeksInput = document.getElementById('weeks');
+    const daysInput = document.getElementById('days');
+    const resultDiv = document.getElementById('resultDiv');
+    const eddOutput = document.getElementById('eddOutput');
+
+    function hideResult() {
+        eddOutput.innerHTML = '';
+        resultDiv.style.display = 'none';
+    }
+
+    function showResult(message) {
+        eddOutput.innerHTML = message;
+        resultDiv.style.display = 'block';
+    }
+
     function calculateEDD() {
-        const dateInput = document.getElementById('refDate').value;
-        const weeksInput = document.getElementById('weeks').value;
-        const daysInput = document.getElementById('days').value;
-        
-        if (!dateInput || weeksInput === '' || daysInput === '') {
-            alert('Please fill in all fields.');
+        const dateInput = refDateInput.value.trim();
+        const weeksValue = weeksInput.value;
+        const daysValue = daysInput.value;
+
+        if (!dateInput && weeksValue === '' && daysValue === '') {
+            hideResult();
+            return;
+        }
+
+        if (!dateInput || weeksValue === '' || daysValue === '') {
+            showResult('Enter all three fields to see your Estimated Due Date.');
             return;
         }
 
         const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
         if (!dateRegex.test(dateInput)) {
-            alert('Please enter the date in yyyy-mm-dd format.');
+            showResult('Please enter the date in yyyy-mm-dd format.');
             return;
         }
 
-        // When a date is parsed like "YYYY-MM-DD", it assumes UTC.
-        // It's safer to split the string or append time to avoid timezone offset issues.
-        // Or simply use new Date(dateInput + 'T00:00:00');
-        const refDate = new Date(dateInput + 'T00:00:00');
-        if (isNaN(refDate.getTime())) {
-            alert('Please enter a valid date.');
+        // Parse as a local date to avoid timezone offset issues.
+        const [dateYear, dateMonth, dateDay] = dateInput.split('-').map(Number);
+        const refDate = new Date(dateYear, dateMonth - 1, dateDay);
+        if (
+            isNaN(refDate.getTime()) ||
+            refDate.getFullYear() !== dateYear ||
+            refDate.getMonth() !== dateMonth - 1 ||
+            refDate.getDate() !== dateDay
+        ) {
+            showResult('Please enter a valid date.');
             return;
         }
-        const weeks = parseInt(weeksInput, 10);
-        const days = parseInt(daysInput, 10);
+
+        const weeks = parseInt(weeksValue, 10);
+        const days = parseInt(daysValue, 10);
+        if (Number.isNaN(weeks) || weeks < 0 || weeks > 42) {
+            showResult('Weeks pregnant must be between 0 and 42.');
+            return;
+        }
+
+        if (Number.isNaN(days) || days < 0 || days > 6) {
+            showResult('Days pregnant must be between 0 and 6.');
+            return;
+        }
 
         // Calculate days to subtract: (week * 7 + days)
         const daysPregnant = (weeks * 7) + days;
-        
+
         // 40 weeks = 280 days
         // Logic: date - (week*7 + days) + 40 weeks
         // In days: date - daysPregnant + 280
@@ -136,12 +164,13 @@
         const day = String(eddDate.getDate()).padStart(2, '0');
         const formattedDate = `${year}-${month}-${day}`;
 
-        const resultDiv = document.getElementById('resultDiv');
-        const eddOutput = document.getElementById('eddOutput');
-
-        eddOutput.innerHTML = `Your Estimated Due Date is:<br><br><span style="color:#007BFF; font-size: 1.2em;">${formattedDate}</span>`;
-        resultDiv.style.display = 'block';
+        showResult(`Your Estimated Due Date is:<br><br><span style="color:#007BFF; font-size: 1.2em;">${formattedDate}</span>`);
     }
+
+    [refDateInput, weeksInput, daysInput].forEach((input) => {
+        input.addEventListener('input', calculateEDD);
+        input.addEventListener('change', calculateEDD);
+    });
 </script>
 
 </body>
