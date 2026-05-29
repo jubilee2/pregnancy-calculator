@@ -168,7 +168,7 @@
     }
 
     [refDateInput, weeksInput, daysInput].forEach((input) => {
-        input.addEventListener('input', calculateEDD);
+        input.addEventListener('change', calculateEDD);
     });
     hideResult();
 </script>
