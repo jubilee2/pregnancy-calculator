@@ -49,6 +49,20 @@
             font-size: 0.9em;
             text-align: center;
         }
+        #setZeroBtn {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        #setZeroBtn:hover {
+            background-color: #0056b3;
+        }
         .result {
             margin-top: 20px;
             padding: 15px;
@@ -77,6 +91,7 @@
         <label for="days">Days Pregnant</label>
         <input type="number" id="days" min="0" max="6" placeholder="e.g., 3" required>
     </div>
+    <button type="button" id="setZeroBtn">Set week and day to 0</button>
     <p class="hint">Enter a reference date, weeks, and days to calculate automatically.</p>
     <div class="result" id="resultDiv" aria-live="polite">
         <span id="eddOutput"></span>
@@ -89,6 +104,7 @@
     const daysInput = document.getElementById('days');
     const resultDiv = document.getElementById('resultDiv');
     const eddOutput = document.getElementById('eddOutput');
+    const setZeroBtn = document.getElementById('setZeroBtn');
 
     function hideResult() {
         eddOutput.innerHTML = '';
@@ -170,6 +186,13 @@
     [refDateInput, weeksInput, daysInput].forEach((input) => {
         input.addEventListener('input', calculateEDD);
     });
+
+    setZeroBtn.addEventListener('click', () => {
+        weeksInput.value = 0;
+        daysInput.value = 0;
+        calculateEDD();
+    });
+
     hideResult();
 </script>
 
