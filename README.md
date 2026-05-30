@@ -19,15 +19,6 @@ A lightweight, dependency-free Estimated Due Date (EDD) calculator that runs ent
   - Days between `0` and `6`
 - Runs as a static single-page app with no dependencies, server, or build step
 
-## Quick Start
-
-1. Clone or download this repository.
-2. Open `index.html` directly in any modern web browser.
-3. Enter a reference date, weeks pregnant, and days pregnant.
-4. Read the automatically calculated Estimated Due Date.
-
-No installation or package manager is required.
-
 ## How the Calculation Works
 
 The calculator treats a full-term pregnancy as 40 weeks, or 280 days. It converts the entered gestational age to days, subtracts that value from 280, and adds the remaining days to the reference date.
