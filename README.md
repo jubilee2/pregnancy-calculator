@@ -14,7 +14,7 @@ A lightweight, dependency-free Estimated Due Date (EDD) calculator that runs ent
 - Includes a shortcut button to set weeks and days to `0`
 - Provides validation for:
   - Required fields
-  - Date format and real calendar dates
+  - Date format and valid calendar dates
   - Weeks between `0` and `42`
   - Days between `0` and `6`
 - Runs as a static single-page app with no dependencies, server, or build step
