@@ -49,7 +49,7 @@ estimated due date = 2026-05-29 + 193 days
 - Keep the app dependency-free unless a future task explicitly requires tooling.
 - Preserve the static-site structure so `index.html` can be opened directly in a browser.
 - The application logic, styling, and markup currently live in `index.html`.
-- For behavior changes, manually test the affected calculator flow in a browser when possible.
+- For behavior changes, manually test the affected calculator flow in a browser.
 
 ## Usage Notes
 
