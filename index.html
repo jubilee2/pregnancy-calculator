@@ -19,7 +19,7 @@
             padding: 20px 30px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            max-width: 400px;
+            max-width: 600px;
             width: 100%;
         }
         h2 {
@@ -74,6 +74,63 @@
             color: #333;
             display: none;
         }
+
+        /* Timeline styles */
+        #timelineContainer {
+            margin-top: 40px;
+            margin-bottom: 30px;
+            position: relative;
+            height: 60px;
+            width: 100%;
+        }
+        .timeline-line {
+            position: absolute;
+            top: 50%;
+            left: 5%;
+            right: 5%;
+            height: 4px;
+            background-color: #ccc;
+            transform: translateY(-50%);
+            border-radius: 2px;
+        }
+        .timeline-marker {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 14px;
+            height: 14px;
+            background-color: #007BFF;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 0 1px #007BFF;
+            z-index: 1;
+        }
+        .timeline-marker.actual-delivery {
+            background-color: #28a745;
+            box-shadow: 0 0 0 1px #28a745;
+        }
+        .timeline-label {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8em;
+            color: #555;
+            white-space: nowrap;
+            text-align: center;
+        }
+        .timeline-label.top {
+            bottom: 100%;
+            margin-bottom: 8px;
+        }
+        .timeline-label.bottom {
+            top: 100%;
+            margin-top: 8px;
+        }
+        .timeline-label .date-text {
+            font-weight: normal;
+            font-size: 0.9em;
+            color: #777;
+        }
     </style>
 </head>
 <body>
@@ -93,9 +150,14 @@
         <input type="number" id="days" min="0" max="6" placeholder="e.g., 3" required>
     </div>
     <button type="button" id="setZeroBtn">Set week and day to 0</button>
+    <div class="form-group">
+        <label for="actualDate">Actual Delivery Date (Optional)</label>
+        <input type="date" id="actualDate">
+    </div>
     <p class="hint">Enter a reference date, weeks, and days to calculate automatically.</p>
     <div class="result" id="resultDiv" aria-live="polite">
         <span id="eddOutput"></span>
+        <div id="timelineContainer"></div>
     </div>
 </div>
 
@@ -103,12 +165,15 @@
     const refDateInput = document.getElementById('refDate');
     const weeksInput = document.getElementById('weeks');
     const daysInput = document.getElementById('days');
+    const actualDateInput = document.getElementById('actualDate');
     const resultDiv = document.getElementById('resultDiv');
     const eddOutput = document.getElementById('eddOutput');
+    const timelineContainer = document.getElementById('timelineContainer');
     const setZeroBtn = document.getElementById('setZeroBtn');
 
     function hideResult() {
         eddOutput.innerHTML = '';
+        timelineContainer.innerHTML = '';
         resultDiv.style.display = 'none';
     }
 
@@ -175,19 +240,114 @@
         const eddDate = new Date(refDate);
         eddDate.setDate(eddDate.getDate() + totalDaysToAdd);
 
+        // Calculate LMP (Last Menstrual Period) which is 0 weeks 0 days
+        const lmpDate = new Date(refDate);
+        lmpDate.setDate(lmpDate.getDate() - daysPregnant);
+
         // Format output to match local date format
-        // Setting { year: 'numeric', month: '2-digit', day: '2-digit' }
-        // to closely mimic how native date inputs often display.
-        const formattedDate = eddDate.toLocaleDateString(undefined, {
+        const dateFormatter = new Intl.DateTimeFormat(undefined, {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit'
         });
+        const formattedEDDDate = dateFormatter.format(eddDate);
+        let resultHtml = `Your Estimated Due Date is:<br><br><span style="color:#007BFF; font-size: 1.2em;">${formattedEDDDate}</span>`;
 
-        showResult(`Your Estimated Due Date is:<br><br><span style="color:#007BFF; font-size: 1.2em;">${formattedDate}</span>`);
+        let actualDeliveryDate = null;
+        let actualGA = null;
+
+        const actualDateValue = actualDateInput.value.trim();
+        if (actualDateValue) {
+            const actualDateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (actualDateRegex.test(actualDateValue)) {
+                const [aYear, aMonth, aDay] = actualDateValue.split('-').map(Number);
+                const aDate = new Date(aYear, aMonth - 1, aDay);
+                if (
+                    !isNaN(aDate.getTime()) &&
+                    aDate.getFullYear() === aYear &&
+                    aDate.getMonth() === aMonth - 1 &&
+                    aDate.getDate() === aDay
+                ) {
+                    actualDeliveryDate = aDate;
+                    const diffTime = Math.abs(aDate - lmpDate);
+                    // allow negative days if somehow actual delivery is before LMP, but normally we use standard diff
+                    const diffDays = Math.round((aDate - lmpDate) / (1000 * 60 * 60 * 24));
+                    if(diffDays >= 0) {
+                        const aWeeks = Math.floor(diffDays / 7);
+                        const aDays = diffDays % 7;
+                        actualGA = `${aWeeks} weeks, ${aDays} days`;
+                        const formattedActualDate = dateFormatter.format(actualDeliveryDate);
+                        resultHtml += `<br><br>Actual Delivery Date:<br><span style="color:#28a745; font-size: 1.2em;">${formattedActualDate}</span><br><span style="font-size: 0.9em; color: #555;">(GA: ${actualGA})</span>`;
+                    }
+                }
+            }
+        }
+
+        showResult(resultHtml);
+        renderTimeline(lmpDate, refDate, eddDate, actualDeliveryDate, weeks, days, actualGA);
     }
 
-    [refDateInput, weeksInput, daysInput].forEach((input) => {
+    function renderTimeline(lmp, ref, edd, actual, refWeeks, refDays, actualGA) {
+        timelineContainer.innerHTML = '';
+
+        const points = [
+            { date: lmp, label: 'Start<br><span class="date-text">(0w 0d)</span>', isActual: false },
+            { date: ref, label: `Reference<br><span class="date-text">(${refWeeks}w ${refDays}d)</span>`, isActual: false },
+            { date: edd, label: 'EDD<br><span class="date-text">(40w 0d)</span>', isActual: false }
+        ];
+
+        if (actual) {
+            let labelActual = 'Delivered';
+            if(actualGA) {
+                // Shorten actualGA to format (Xw Yd)
+                const match = actualGA.match(/(\d+)\s+weeks,\s+(\d+)\s+days/);
+                if(match) {
+                     labelActual += `<br><span class="date-text">(${match[1]}w ${match[2]}d)</span>`;
+                } else {
+                     labelActual += `<br><span class="date-text">(${actualGA})</span>`;
+                }
+            }
+            points.push({ date: actual, label: labelActual, isActual: true });
+        }
+
+        // Sort points by date
+        points.sort((a, b) => a.date - b.date);
+
+        const minTime = points[0].date.getTime();
+        const maxTime = points[points.length - 1].date.getTime();
+
+        // Calculate positions (5% to 95%)
+        const timelineLine = document.createElement('div');
+        timelineLine.className = 'timeline-line';
+        timelineContainer.appendChild(timelineLine);
+
+        const duration = maxTime - minTime;
+
+        points.forEach((point, index) => {
+            let percentage;
+            if (duration === 0) {
+                percentage = 50;
+            } else {
+                percentage = 5 + ((point.date.getTime() - minTime) / duration) * 90;
+            }
+
+            const marker = document.createElement('div');
+            marker.className = 'timeline-marker';
+            if (point.isActual) {
+                marker.classList.add('actual-delivery');
+            }
+            marker.style.left = `${percentage}%`;
+
+            const label = document.createElement('div');
+            label.className = `timeline-label ${index % 2 === 0 ? 'bottom' : 'top'}`;
+            label.innerHTML = point.label;
+
+            marker.appendChild(label);
+            timelineContainer.appendChild(marker);
+        });
+    }
+
+    [refDateInput, weeksInput, daysInput, actualDateInput].forEach((input) => {
         input.addEventListener('input', calculateEDD);
     });
 
