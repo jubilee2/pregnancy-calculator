@@ -5,200 +5,702 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EDD Calculator</title>
     <style>
+        :root {
+            --primary: #007BFF;
+            --blue: #e3f2fd;
+            --green: #e8f5e9;
+            --purple: #f3e5f5;
+            --pink: #fce4ec;
+            --text-main: #333;
+            --text-muted: #666;
+            --bg-body: #f4f4f9;
+            --bg-card: #ffffff;
+            --border: #ddd;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --border-radius: 12px;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
         }
-        .container {
-            background-color: white;
-            padding: 20px 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            max-width: 400px;
+
+        .main-container {
+            max-width: 600px;
             width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
-        h2 {
+
+        h1 {
             text-align: center;
-            color: #333;
+            font-size: 1.5em;
+            margin: 0;
+            color: var(--text-main);
         }
+
+        .card {
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .card-header {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            color: var(--primary);
+        }
+
+        .method-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .method-label {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: all 0.2s ease;
+            background: #f9f9f9;
+        }
+
+        .method-label:hover {
+            background: #f1f1f1;
+        }
+
+        .method-selector input[type="radio"] {
+            display: none;
+        }
+
+        .method-selector input[type="radio"]:checked + .method-label {
+            border-color: var(--primary);
+            background-color: var(--blue);
+            color: var(--primary);
+        }
+
         .form-group {
             margin-bottom: 15px;
         }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
         label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
-        }
-        input[type="text"],
-        input[type="number"],
-        input[type="date"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .hint {
-            margin-top: 5px;
-            color: #666;
+            margin-bottom: 6px;
+            font-weight: 500;
             font-size: 0.9em;
-            text-align: center;
+            color: var(--text-muted);
         }
-        #setZeroBtn {
+
+        input[type="date"],
+        input[type="number"],
+        input[type="text"] {
             width: 100%;
             padding: 10px;
-            margin-bottom: 15px;
-            background-color: #0056b3;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            box-sizing: border-box;
             font-size: 1em;
+            transition: border-color 0.2s;
         }
-        #setZeroBtn:hover {
-            background-color: #004085;
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
         }
-        .result {
+
+        .helper-text {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            margin-top: -10px;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
             margin-top: 20px;
-            padding: 15px;
-            background-color: #e9ecef;
-            border-radius: 4px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            font-size: 1em;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s;
+        }
+
+        .btn-calc {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-calc:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-reset {
+            background-color: #e0e0e0;
+            color: var(--text-main);
+        }
+
+        .btn-reset:hover {
+            background-color: #c8c8c8;
+        }
+
+        .output-box {
+            background-color: #f9f9f9;
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            font-weight: 600;
+            min-height: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Timeline Styles */
+        .timeline-container {
+            display: none;
+            position: relative;
+            padding: 20px 0;
+            margin-top: 10px;
+        }
+
+        .timeline-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 20px;
+            width: 4px;
+            background-color: var(--border);
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 50px;
+            margin-bottom: 25px;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: white;
+            border: 4px solid var(--primary);
+            z-index: 1;
+        }
+
+        .timeline-item.start .timeline-marker { border-color: #4caf50; } /* green */
+        .timeline-item.ref .timeline-marker { border-color: #2196f3; } /* blue */
+        .timeline-item.delivery .timeline-marker { border-color: #e91e63; } /* pink */
+        .timeline-item.edd .timeline-marker { border-color: #9c27b0; } /* purple */
+
+        .timeline-content {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 12px 15px;
+            border: 1px solid var(--border);
+        }
+
+        .timeline-item.start .timeline-content { background-color: var(--green); border-color: #c8e6c9; }
+        .timeline-item.ref .timeline-content { background-color: var(--blue); border-color: #bbdefb; }
+        .timeline-item.delivery .timeline-content { background-color: var(--pink); border-color: #f8bbd0; }
+        .timeline-item.edd .timeline-content { background-color: var(--purple); border-color: #e1bee7; }
+
+        .timeline-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+            font-size: 1.05em;
+        }
+
+        .timeline-date {
+            font-size: 0.95em;
+            color: var(--text-main);
+            margin-bottom: 2px;
+        }
+
+        .timeline-ga {
+            font-size: 0.85em;
+            color: var(--text-muted);
+        }
+
+        .error-msg {
+            color: #d32f2f;
+            font-size: 0.9em;
+            margin-top: 10px;
             text-align: center;
             font-weight: bold;
-            color: #333;
+        }
+
+        .method-section {
             display: none;
+        }
+
+        .method-section.active {
+            display: block;
+        }
+
+        .placeholder-text {
+            color: #aaa;
+            font-weight: normal;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>EDD Calculator</h2>
-    <div class="form-group">
-        <label for="refDate">Reference Date</label>
-        <input type="date" id="refDate" required>
+<div class="main-container">
+    <h1>EDD Calculator</h1>
+
+    <!-- Section 1: Choose EDD Input Method -->
+    <div class="card">
+        <div class="card-header">1. Choose EDD Input Method</div>
+
+        <div class="method-selector">
+            <input type="radio" id="method1" name="inputMethod" value="1" checked>
+            <label class="method-label" for="method1">Ref Date + GA</label>
+
+            <input type="radio" id="method2" name="inputMethod" value="2">
+            <label class="method-label" for="method2">EDD Only</label>
+        </div>
+
+        <div id="method1Section" class="method-section active">
+            <div class="form-group">
+                <label for="refDate">Reference Date</label>
+                <input type="date" id="refDate">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="weeks">Weeks Pregnant</label>
+                    <input type="number" id="weeks" min="0" max="42" placeholder="e.g., 12">
+                </div>
+                <div class="form-group">
+                    <label for="days">Days Pregnant</label>
+                    <input type="number" id="days" min="0" max="6" placeholder="e.g., 3">
+                </div>
+            </div>
+        </div>
+
+        <div id="method2Section" class="method-section">
+            <div class="form-group">
+                <label for="eddInput">Estimated Due Date (EDD)</label>
+                <input type="date" id="eddInput">
+            </div>
+            <div class="helper-text">No reference date required for this method.</div>
+        </div>
+
+        <div id="calcError" class="error-msg"></div>
+
+        <div class="button-group">
+            <button class="btn-calc" id="calcBtn">Calculate</button>
+            <button class="btn-reset" id="resetBtn">Reset</button>
+        </div>
     </div>
-    <div class="form-group">
-        <label for="weeks">Weeks Pregnant</label>
-        <input type="number" id="weeks" min="0" max="42" placeholder="e.g., 12" required>
+
+    <!-- Section 2: Actual Delivery Information -->
+    <div class="card">
+        <div class="card-header">2. Actual Delivery Information</div>
+        <div class="helper-text">Can be used with either method. Optional input.</div>
+
+        <div class="form-group">
+            <label for="actualDeliveryDate">Actual Delivery Date</label>
+            <input type="date" id="actualDeliveryDate">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>GA at Delivery</label>
+                <div class="output-box" id="gaDeliveryOut"><span class="placeholder-text">-</span></div>
+            </div>
+            <div class="form-group">
+                <label>Difference from EDD</label>
+                <div class="output-box" id="diffEddOut"><span class="placeholder-text">-</span></div>
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-        <label for="days">Days Pregnant</label>
-        <input type="number" id="days" min="0" max="6" placeholder="e.g., 3" required>
+
+    <!-- Section 3: Pregnancy Timeline -->
+    <div class="card">
+        <div class="card-header">3. Pregnancy Timeline</div>
+        <div class="timeline-container" id="timelineContainer">
+            <div class="timeline-line"></div>
+
+            <div class="timeline-item start" id="tlStart">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="timeline-title">Pregnancy Start</div>
+                    <div class="timeline-date" id="tlStartDate"></div>
+                    <div class="timeline-ga">0w 0d</div>
+                </div>
+            </div>
+
+            <div class="timeline-item ref" id="tlRef" style="display:none;">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="timeline-title">Reference Date</div>
+                    <div class="timeline-date" id="tlRefDate"></div>
+                    <div class="timeline-ga" id="tlRefGa"></div>
+                </div>
+            </div>
+
+            <div class="timeline-item delivery" id="tlDelivery" style="display:none;">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="timeline-title">Actual Delivery</div>
+                    <div class="timeline-date" id="tlDeliveryDate"></div>
+                    <div class="timeline-ga" id="tlDeliveryGa"></div>
+                </div>
+            </div>
+
+            <div class="timeline-item edd" id="tlEdd">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="timeline-title">Estimated Due Date (EDD)</div>
+                    <div class="timeline-date" id="tlEddDate"></div>
+                    <div class="timeline-ga">40w 0d</div>
+                </div>
+            </div>
+
+        </div>
+        <div id="timelinePlaceholder" style="text-align: center; color: var(--text-muted); padding: 20px 0; font-style: italic;">
+            Fill out the details above and click Calculate to see your timeline.
+        </div>
     </div>
-    <button type="button" id="setZeroBtn">Set week and day to 0</button>
-    <p class="hint">Enter a reference date, weeks, and days to calculate automatically.</p>
-    <div class="result" id="resultDiv" aria-live="polite">
-        <span id="eddOutput"></span>
-    </div>
+
 </div>
 
 <script>
+    // Elements - Method Toggle
+    const method1Radio = document.getElementById('method1');
+    const method2Radio = document.getElementById('method2');
+    const method1Section = document.getElementById('method1Section');
+    const method2Section = document.getElementById('method2Section');
+
+    // Elements - Inputs
     const refDateInput = document.getElementById('refDate');
     const weeksInput = document.getElementById('weeks');
     const daysInput = document.getElementById('days');
-    const resultDiv = document.getElementById('resultDiv');
-    const eddOutput = document.getElementById('eddOutput');
-    const setZeroBtn = document.getElementById('setZeroBtn');
+    const eddInput = document.getElementById('eddInput');
+    const actualDeliveryInput = document.getElementById('actualDeliveryDate');
 
-    function hideResult() {
-        eddOutput.innerHTML = '';
-        resultDiv.style.display = 'none';
+    // Elements - Buttons & Error
+    const calcBtn = document.getElementById('calcBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const calcError = document.getElementById('calcError');
+
+    // Elements - Output Section 2
+    const gaDeliveryOut = document.getElementById('gaDeliveryOut');
+    const diffEddOut = document.getElementById('diffEddOut');
+
+    // Elements - Output Section 3
+    const timelineContainer = document.getElementById('timelineContainer');
+    const timelinePlaceholder = document.getElementById('timelinePlaceholder');
+
+    const tlStart = document.getElementById('tlStart');
+    const tlStartDate = document.getElementById('tlStartDate');
+
+    const tlRef = document.getElementById('tlRef');
+    const tlRefDate = document.getElementById('tlRefDate');
+    const tlRefGa = document.getElementById('tlRefGa');
+
+    const tlDelivery = document.getElementById('tlDelivery');
+    const tlDeliveryDate = document.getElementById('tlDeliveryDate');
+    const tlDeliveryGa = document.getElementById('tlDeliveryGa');
+
+    const tlEdd = document.getElementById('tlEdd');
+    const tlEddDate = document.getElementById('tlEddDate');
+
+    // Method Toggle Logic
+    function handleMethodToggle() {
+        if (method1Radio.checked) {
+            method1Section.classList.add('active');
+            method2Section.classList.remove('active');
+        } else {
+            method2Section.classList.add('active');
+            method1Section.classList.remove('active');
+        }
+    }
+    method1Radio.addEventListener('change', handleMethodToggle);
+    method2Radio.addEventListener('change', handleMethodToggle);
+
+    // Helpers
+    function parseLocalDate(dateString) {
+        if (!dateString) return null;
+        const [y, m, d] = dateString.split('-').map(Number);
+        const date = new Date(y, m - 1, d);
+        if (isNaN(date.getTime()) || date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) {
+            return null;
+        }
+        return date;
     }
 
-    function showResult(message) {
-        eddOutput.innerHTML = message;
-        resultDiv.style.display = 'block';
-    }
-
-    function calculateEDD() {
-        const dateInput = refDateInput.value.trim();
-        const weeksValue = weeksInput.value;
-        const daysValue = daysInput.value;
-
-        if (!dateInput && weeksValue === '' && daysValue === '') {
-            hideResult();
-            return;
-        }
-
-        if (!dateInput || weeksValue === '' || daysValue === '') {
-            showResult('Enter all three fields to see your Estimated Due Date.');
-            return;
-        }
-
-        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-        if (!dateRegex.test(dateInput)) {
-            showResult('Please enter the date in yyyy-mm-dd format.');
-            return;
-        }
-
-        // Parse as a local date to avoid timezone offset issues.
-        const [dateYear, dateMonth, dateDay] = dateInput.split('-').map(Number);
-        const refDate = new Date(dateYear, dateMonth - 1, dateDay);
-        if (
-            isNaN(refDate.getTime()) ||
-            refDate.getFullYear() !== dateYear ||
-            refDate.getMonth() !== dateMonth - 1 ||
-            refDate.getDate() !== dateDay
-        ) {
-            showResult('Please enter a valid date.');
-            return;
-        }
-
-        const weeks = parseInt(weeksValue, 10);
-        const days = parseInt(daysValue, 10);
-        if (Number.isNaN(weeks) || weeks < 0 || weeks > 42) {
-            showResult('Weeks pregnant must be between 0 and 42.');
-            return;
-        }
-
-        if (Number.isNaN(days) || days < 0 || days > 6) {
-            showResult('Days pregnant must be between 0 and 6.');
-            return;
-        }
-
-        // Calculate days to subtract: (week * 7 + days)
-        const daysPregnant = (weeks * 7) + days;
-
-        // 40 weeks = 280 days
-        // Logic: date - (week*7 + days) + 40 weeks
-        // In days: date - daysPregnant + 280
-        const totalDaysToAdd = 280 - daysPregnant;
-
-        // Apply to date
-        const eddDate = new Date(refDate);
-        eddDate.setDate(eddDate.getDate() + totalDaysToAdd);
-
-        // Format output to match local date format
-        // Setting { year: 'numeric', month: '2-digit', day: '2-digit' }
-        // to closely mimic how native date inputs often display.
-        const formattedDate = eddDate.toLocaleDateString(undefined, {
+    function formatDate(date) {
+        if (!date) return '';
+        return date.toLocaleDateString(undefined, {
             year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
+            month: 'short',
+            day: 'numeric'
+        });
+    }
+
+    function diffDays(date1, date2) {
+        const Math_floor = Math.floor;
+        // Returns date1 - date2 in days
+        const utc1 = Date.UTC(date1.getFullYear(), date1.getMonth(), date1.getDate());
+        const utc2 = Date.UTC(date2.getFullYear(), date2.getMonth(), date2.getDate());
+        return Math_floor((utc1 - utc2) / (1000 * 60 * 60 * 24));
+    }
+
+    function addDays(date, days) {
+        const result = new Date(date);
+        result.setDate(result.getDate() + days);
+        return result;
+    }
+
+    function formatGA(totalDays) {
+        if (totalDays < 0) return 'Pre-pregnancy';
+        const w = Math.floor(totalDays / 7);
+        const d = totalDays % 7;
+        return `${w}w ${d}d`;
+    }
+
+    function clearOutputs() {
+        gaDeliveryOut.innerHTML = '<span class="placeholder-text">-</span>';
+        diffEddOut.innerHTML = '<span class="placeholder-text">-</span>';
+        timelineContainer.style.display = 'none';
+        timelinePlaceholder.style.display = 'block';
+    }
+
+    // Main Calculate Logic
+    function calculate() {
+        calcError.textContent = '';
+        let pregnancyStart = null;
+        let eddDate = null;
+        let refDate = null;
+        let refGaDays = null;
+
+        // Method 1
+        if (method1Radio.checked) {
+            const dateStr = refDateInput.value.trim();
+            const wStr = weeksInput.value;
+            const dStr = daysInput.value;
+
+            if (!dateStr || wStr === '' || dStr === '') {
+                calcError.textContent = 'Please fill out Reference Date, Weeks, and Days.';
+                clearOutputs();
+        calcError.textContent = "";
+                return;
+            }
+
+            refDate = parseLocalDate(dateStr);
+            if (!refDate) {
+                calcError.textContent = 'Invalid Reference Date.';
+                clearOutputs();
+        calcError.textContent = "";
+                return;
+            }
+
+            const w = parseInt(wStr, 10);
+            const d = parseInt(dStr, 10);
+            if (isNaN(w) || w < 0 || w > 42) {
+                calcError.textContent = 'Weeks must be between 0 and 42.';
+                clearOutputs();
+        calcError.textContent = "";
+                return;
+            }
+            if (isNaN(d) || d < 0 || d > 6) {
+                calcError.textContent = 'Days must be between 0 and 6.';
+                clearOutputs();
+        calcError.textContent = "";
+                return;
+            }
+
+            refGaDays = (w * 7) + d;
+            pregnancyStart = addDays(refDate, -refGaDays);
+            eddDate = addDays(pregnancyStart, 280);
+        }
+        // Method 2
+        else {
+            const dateStr = eddInput.value.trim();
+            if (!dateStr) {
+                calcError.textContent = 'Please enter an EDD.';
+                clearOutputs();
+        calcError.textContent = "";
+                return;
+            }
+
+            eddDate = parseLocalDate(dateStr);
+            if (!eddDate) {
+                calcError.textContent = 'Invalid EDD.';
+                clearOutputs();
+        calcError.textContent = "";
+                return;
+            }
+            pregnancyStart = addDays(eddDate, -280);
+        }
+
+        // Section 2: Actual Delivery Information
+        const deliveryStr = actualDeliveryInput.value.trim();
+        let deliveryDate = null;
+
+        if (deliveryStr) {
+            deliveryDate = parseLocalDate(deliveryStr);
+            if (!deliveryDate) {
+                calcError.textContent = 'Invalid Actual Delivery Date.';
+                clearOutputs();
+        calcError.textContent = "";
+                return;
+            }
+
+            if (deliveryDate < pregnancyStart) {
+                calcError.textContent = 'Warning: Actual Delivery Date is before Pregnancy Start.';
+            }
+
+            const gaAtDeliveryDays = diffDays(deliveryDate, pregnancyStart);
+            gaDeliveryOut.textContent = formatGA(gaAtDeliveryDays);
+
+            const diffFromEdd = diffDays(deliveryDate, eddDate);
+            if (diffFromEdd < 0) {
+                diffEddOut.textContent = `${Math.abs(diffFromEdd)} day(s) early`;
+            } else if (diffFromEdd > 0) {
+                diffEddOut.textContent = `${diffFromEdd} day(s) late`;
+            } else {
+                diffEddOut.textContent = 'On EDD';
+            }
+        } else {
+            gaDeliveryOut.innerHTML = '<span class="placeholder-text">-</span>';
+            diffEddOut.innerHTML = '<span class="placeholder-text">-</span>';
+        }
+
+        // Section 3: Timeline
+        timelinePlaceholder.style.display = 'none';
+        timelineContainer.style.display = 'block';
+
+        // Nodes array to sort timeline
+        let nodes = [];
+
+        nodes.push({
+            id: 'start',
+            date: pregnancyStart,
+            gaStr: '0w 0d',
+            title: 'Pregnancy Start',
+            element: tlStart,
+            dateElem: tlStartDate
         });
 
-        showResult(`Your Estimated Due Date is:<br><br><span style="color:#007BFF; font-size: 1.2em;">${formattedDate}</span>`);
+        if (refDate && method1Radio.checked) {
+            nodes.push({
+                id: 'ref',
+                date: refDate,
+                gaStr: formatGA(refGaDays),
+                title: 'Reference Date',
+                element: tlRef,
+                dateElem: tlRefDate,
+                gaElem: tlRefGa
+            });
+            tlRef.style.display = 'block';
+        } else {
+            tlRef.style.display = 'none';
+        }
+
+        if (deliveryDate) {
+            nodes.push({
+                id: 'delivery',
+                date: deliveryDate,
+                gaStr: formatGA(diffDays(deliveryDate, pregnancyStart)),
+                title: 'Actual Delivery',
+                element: tlDelivery,
+                dateElem: tlDeliveryDate,
+                gaElem: tlDeliveryGa
+            });
+            tlDelivery.style.display = 'block';
+        } else {
+            tlDelivery.style.display = 'none';
+        }
+
+        nodes.push({
+            id: 'edd',
+            date: eddDate,
+            gaStr: '40w 0d',
+            title: 'Estimated Due Date (EDD)',
+            element: tlEdd,
+            dateElem: tlEddDate
+        });
+
+        // Sort nodes chronologically
+        nodes.sort((a, b) => a.date - b.date);
+
+        // Append sorted nodes to timeline container so they show in order
+        nodes.forEach(node => {
+            timelineContainer.appendChild(node.element);
+            node.dateElem.textContent = formatDate(node.date);
+            if (node.gaElem) {
+                node.gaElem.textContent = node.gaStr;
+            }
+        });
     }
 
-    [refDateInput, weeksInput, daysInput].forEach((input) => {
-        input.addEventListener('input', calculateEDD);
-    });
+    // Reset Logic
+    function reset() {
+        // Inputs Method 1
+        refDateInput.value = '';
+        weeksInput.value = '';
+        daysInput.value = '';
 
-    setZeroBtn.addEventListener('click', () => {
-        weeksInput.value = '0';
-        daysInput.value = '0';
-        calculateEDD();
-    });
+        // Inputs Method 2
+        eddInput.value = '';
 
-    hideResult();
+        // Input Delivery
+        actualDeliveryInput.value = '';
+
+        // Reset Method
+        method1Radio.checked = true;
+        handleMethodToggle();
+
+        clearOutputs();
+        calcError.textContent = "";
+    }
+
+    // Event Listeners
+    calcBtn.addEventListener('click', calculate);
+    resetBtn.addEventListener('click', reset);
+
 </script>
-
 </body>
 </html>
