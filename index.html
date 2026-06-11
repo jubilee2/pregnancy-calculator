@@ -8,126 +8,415 @@
 </head>
 <body>
 
-<div class="container">
-    <h2>EDD Calculator</h2>
-    <div class="form-group">
-        <label for="refDate">Reference Date</label>
-        <input type="date" id="refDate" required>
-    </div>
-    <div class="form-group">
-        <label for="weeks">Weeks Pregnant</label>
-        <input type="number" id="weeks" min="0" max="42" placeholder="e.g., 12" required>
-    </div>
-    <div class="form-group">
-        <label for="days">Days Pregnant</label>
-        <input type="number" id="days" min="0" max="6" placeholder="e.g., 3" required>
-    </div>
-    <button type="button" id="setZeroBtn">Set week and day to 0</button>
-    <p class="hint">Enter a reference date, weeks, and days to calculate automatically.</p>
-    <div class="result" id="resultDiv" aria-live="polite">
-        <span id="eddOutput"></span>
-    </div>
-</div>
+<main class="app-shell">
+    <header class="hero-card" aria-labelledby="pageTitle">
+        <div class="hero-icon" aria-hidden="true">♡</div>
+        <div>
+            <p class="eyebrow">Pregnancy Planning</p>
+            <h1 id="pageTitle">EDD Calculator</h1>
+            <p class="hero-copy">Calculate an estimated due date using a reference date and gestational age, or enter an EDD directly.</p>
+        </div>
+    </header>
+
+    <form class="calculator" novalidate>
+        <section class="card method-section" aria-labelledby="methodTitle">
+            <div class="section-heading">
+                <span class="section-number">1</span>
+                <div>
+                    <h2 id="methodTitle">Choose EDD Input Method</h2>
+                    <p>Select exactly one method to calculate your estimated due date.</p>
+                </div>
+            </div>
+
+            <fieldset class="method-picker" aria-describedby="methodHelp">
+                <legend class="sr-only">EDD input method</legend>
+                <label class="method-card active" data-method-card="method1">
+                    <input type="radio" name="eddMethod" value="method1" checked>
+                    <span class="method-accent blue" aria-hidden="true">1</span>
+                    <span>
+                        <strong>Method 1: Reference Date + Gestational Age</strong>
+                        <small>Use the date that matches a known gestational age.</small>
+                    </span>
+                </label>
+                <label class="method-card" data-method-card="method2">
+                    <input type="radio" name="eddMethod" value="method2">
+                    <span class="method-accent pink" aria-hidden="true">2</span>
+                    <span>
+                        <strong>Method 2: EDD Only</strong>
+                        <small>No reference date required — enter your due date directly.</small>
+                    </span>
+                </label>
+            </fieldset>
+            <p id="methodHelp" class="helper-text">Only the selected method is used for the calculation.</p>
+
+            <div class="method-panels">
+                <div class="method-panel active" id="method1Panel">
+                    <div class="field-grid three-columns">
+                        <div class="field">
+                            <label for="refDate">Reference Date</label>
+                            <input type="date" id="refDate" autocomplete="off">
+                        </div>
+                        <div class="field">
+                            <label for="weeks">Weeks Pregnant</label>
+                            <input type="number" id="weeks" min="0" max="42" placeholder="26">
+                        </div>
+                        <div class="field">
+                            <label for="days">Days Pregnant</label>
+                            <input type="number" id="days" min="0" max="6" placeholder="0">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="method-panel" id="method2Panel" hidden>
+                    <div class="field-grid single-column">
+                        <div class="field">
+                            <label for="eddInput">EDD</label>
+                            <input type="date" id="eddInput" autocomplete="off">
+                            <p class="helper-text inline">Method 2 does not require a reference date.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-row">
+                <button type="button" class="primary-button" id="calculateBtn">Calculate</button>
+                <button type="reset" class="secondary-button" id="resetBtn">Reset</button>
+            </div>
+
+            <div class="message" id="message" role="status" aria-live="polite"></div>
+        </section>
+
+        <section class="card delivery-section" aria-labelledby="deliveryTitle">
+            <div class="section-heading compact">
+                <span class="section-number green">2</span>
+                <div>
+                    <h2 id="deliveryTitle">Actual Delivery Information</h2>
+                    <p>Can be used with either method.</p>
+                </div>
+            </div>
+
+            <div class="field-grid three-columns">
+                <div class="field">
+                    <label for="actualDeliveryDate">Actual Delivery Date <span class="optional">optional</span></label>
+                    <input type="date" id="actualDeliveryDate" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label for="gaAtDelivery">GA at Delivery <span class="optional">calculated</span></label>
+                    <output id="gaAtDelivery" class="output-box" for="actualDeliveryDate">—</output>
+                </div>
+                <div class="field">
+                    <label for="differenceFromEdd">Difference from EDD <span class="optional">calculated</span></label>
+                    <output id="differenceFromEdd" class="output-box" for="actualDeliveryDate">—</output>
+                </div>
+            </div>
+            <p class="warning" id="deliveryWarning" role="alert"></p>
+        </section>
+
+        <section class="card timeline-section" aria-labelledby="timelineTitle">
+            <div class="section-heading compact">
+                <span class="section-number purple">3</span>
+                <div>
+                    <h2 id="timelineTitle">Pregnancy Timeline</h2>
+                    <p>Visual timeline of key pregnancy milestones.</p>
+                </div>
+            </div>
+
+            <div class="timeline-empty" id="timelineEmpty">Choose an input method and calculate to view your pregnancy timeline.</div>
+            <div class="timeline" id="timeline" hidden>
+                <div class="timeline-track" aria-hidden="true">
+                    <span class="track-fill"></span>
+                </div>
+                <div class="timeline-points" id="timelinePoints"></div>
+            </div>
+        </section>
+    </form>
+</main>
 
 <script>
+    const MS_PER_DAY = 24 * 60 * 60 * 1000;
+    const PREGNANCY_DAYS = 280;
+
+    const methodInputs = document.querySelectorAll('input[name="eddMethod"]');
+    const methodCards = document.querySelectorAll('[data-method-card]');
+    const method1Panel = document.getElementById('method1Panel');
+    const method2Panel = document.getElementById('method2Panel');
     const refDateInput = document.getElementById('refDate');
     const weeksInput = document.getElementById('weeks');
     const daysInput = document.getElementById('days');
-    const resultDiv = document.getElementById('resultDiv');
-    const eddOutput = document.getElementById('eddOutput');
-    const setZeroBtn = document.getElementById('setZeroBtn');
+    const eddInput = document.getElementById('eddInput');
+    const actualDeliveryInput = document.getElementById('actualDeliveryDate');
+    const gaAtDelivery = document.getElementById('gaAtDelivery');
+    const differenceFromEdd = document.getElementById('differenceFromEdd');
+    const deliveryWarning = document.getElementById('deliveryWarning');
+    const calculateBtn = document.getElementById('calculateBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const message = document.getElementById('message');
+    const timeline = document.getElementById('timeline');
+    const timelineEmpty = document.getElementById('timelineEmpty');
+    const timelinePoints = document.getElementById('timelinePoints');
 
-    function hideResult() {
-        eddOutput.innerHTML = '';
-        resultDiv.style.display = 'none';
+    let currentResult = null;
+
+    function getSelectedMethod() {
+        return document.querySelector('input[name="eddMethod"]:checked').value;
     }
 
-    function showResult(message) {
-        eddOutput.innerHTML = message;
-        resultDiv.style.display = 'block';
+    function parseDateInput(value) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+            return null;
+        }
+
+        const [year, month, day] = value.split('-').map(Number);
+        const date = new Date(year, month - 1, day);
+        if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+            return null;
+        }
+
+        return date;
     }
 
-    function calculateEDD() {
-        const dateInput = refDateInput.value.trim();
-        const weeksValue = weeksInput.value;
-        const daysValue = daysInput.value;
+    function addDays(date, days) {
+        const nextDate = new Date(date);
+        nextDate.setDate(nextDate.getDate() + days);
+        return nextDate;
+    }
 
-        if (!dateInput && weeksValue === '' && daysValue === '') {
-            hideResult();
-            return;
-        }
+    function dayDiff(startDate, endDate) {
+        const start = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+        const end = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+        return Math.round((end - start) / MS_PER_DAY);
+    }
 
-        if (!dateInput || weeksValue === '' || daysValue === '') {
-            showResult('Enter all three fields to see your Estimated Due Date.');
-            return;
-        }
-
-        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-        if (!dateRegex.test(dateInput)) {
-            showResult('Please enter the date in yyyy-mm-dd format.');
-            return;
-        }
-
-        // Parse as a local date to avoid timezone offset issues.
-        const [dateYear, dateMonth, dateDay] = dateInput.split('-').map(Number);
-        const refDate = new Date(dateYear, dateMonth - 1, dateDay);
-        if (
-            isNaN(refDate.getTime()) ||
-            refDate.getFullYear() !== dateYear ||
-            refDate.getMonth() !== dateMonth - 1 ||
-            refDate.getDate() !== dateDay
-        ) {
-            showResult('Please enter a valid date.');
-            return;
-        }
-
-        const weeks = parseInt(weeksValue, 10);
-        const days = parseInt(daysValue, 10);
-        if (Number.isNaN(weeks) || weeks < 0 || weeks > 42) {
-            showResult('Weeks pregnant must be between 0 and 42.');
-            return;
-        }
-
-        if (Number.isNaN(days) || days < 0 || days > 6) {
-            showResult('Days pregnant must be between 0 and 6.');
-            return;
-        }
-
-        // Calculate days to subtract: (week * 7 + days)
-        const daysPregnant = (weeks * 7) + days;
-
-        // 40 weeks = 280 days
-        // Logic: date - (week*7 + days) + 40 weeks
-        // In days: date - daysPregnant + 280
-        const totalDaysToAdd = 280 - daysPregnant;
-
-        // Apply to date
-        const eddDate = new Date(refDate);
-        eddDate.setDate(eddDate.getDate() + totalDaysToAdd);
-
-        // Format output to match local date format
-        // Setting { year: 'numeric', month: '2-digit', day: '2-digit' }
-        // to closely mimic how native date inputs often display.
-        const formattedDate = eddDate.toLocaleDateString(undefined, {
+    function formatDate(date) {
+        return date.toLocaleDateString(undefined, {
             year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
+            month: 'short',
+            day: 'numeric'
+        });
+    }
+
+    function formatGestationalAge(totalDays) {
+        const weeks = Math.floor(totalDays / 7);
+        const days = totalDays % 7;
+        return `${weeks}w ${days}d`;
+    }
+
+    function formatEddDifference(diffDays) {
+        if (diffDays === 0) {
+            return 'On EDD';
+        }
+
+        const timing = diffDays < 0 ? 'early' : 'late';
+        const absDays = Math.abs(diffDays);
+        return `${absDays} day${absDays === 1 ? '' : 's'} ${timing}`;
+    }
+
+    function setMessage(text, type = 'info') {
+        message.textContent = text;
+        message.className = `message ${text ? type : ''}`;
+    }
+
+    function clearDeliveryOutputs() {
+        gaAtDelivery.textContent = '—';
+        differenceFromEdd.textContent = '—';
+        deliveryWarning.textContent = '';
+    }
+
+    function clearTimeline() {
+        timeline.hidden = true;
+        timelineEmpty.hidden = false;
+        timelinePoints.innerHTML = '';
+    }
+
+    function setMethod(method) {
+        methodCards.forEach((card) => {
+            card.classList.toggle('active', card.dataset.methodCard === method);
         });
 
-        showResult(`Your Estimated Due Date is:<br><br><span class="edd-date">${formattedDate}</span>`);
+        const isMethod1 = method === 'method1';
+        method1Panel.hidden = !isMethod1;
+        method2Panel.hidden = isMethod1;
+        method1Panel.classList.toggle('active', isMethod1);
+        method2Panel.classList.toggle('active', !isMethod1);
+        setMessage('');
+        currentResult = null;
+        clearDeliveryOutputs();
+        clearTimeline();
     }
 
-    [refDateInput, weeksInput, daysInput].forEach((input) => {
-        input.addEventListener('input', calculateEDD);
+    function validateAndCalculate() {
+        const method = getSelectedMethod();
+        let pregnancyStart;
+        let referenceDate = null;
+        let eddDate;
+
+        if (method === 'method1') {
+            referenceDate = parseDateInput(refDateInput.value.trim());
+            const weeks = Number.parseInt(weeksInput.value, 10);
+            const days = Number.parseInt(daysInput.value, 10);
+
+            if (!referenceDate || weeksInput.value === '' || daysInput.value === '') {
+                setMessage('Method 1 requires Reference Date, Weeks Pregnant, and Days Pregnant.', 'error');
+                return null;
+            }
+
+            if (Number.isNaN(weeks) || weeks < 0 || weeks > 42) {
+                setMessage('Weeks pregnant must be between 0 and 42.', 'error');
+                return null;
+            }
+
+            if (Number.isNaN(days) || days < 0 || days > 6) {
+                setMessage('Days pregnant must be between 0 and 6.', 'error');
+                return null;
+            }
+
+            pregnancyStart = addDays(referenceDate, -((weeks * 7) + days));
+            eddDate = addDays(pregnancyStart, PREGNANCY_DAYS);
+        } else {
+            eddDate = parseDateInput(eddInput.value.trim());
+            if (!eddDate) {
+                setMessage('Method 2 requires an EDD.', 'error');
+                return null;
+            }
+
+            pregnancyStart = addDays(eddDate, -PREGNANCY_DAYS);
+        }
+
+        return {
+            method,
+            pregnancyStart,
+            referenceDate,
+            eddDate
+        };
+    }
+
+    function updateDeliveryOutputs(result) {
+        clearDeliveryOutputs();
+
+        if (!actualDeliveryInput.value) {
+            return null;
+        }
+
+        const actualDelivery = parseDateInput(actualDeliveryInput.value.trim());
+        if (!actualDelivery) {
+            deliveryWarning.textContent = 'Please enter a valid actual delivery date.';
+            return null;
+        }
+
+        const gaDays = dayDiff(result.pregnancyStart, actualDelivery);
+        const diffDays = dayDiff(result.eddDate, actualDelivery);
+
+        if (gaDays < 0) {
+            deliveryWarning.textContent = 'Actual Delivery Date cannot be before Pregnancy Start.';
+            return { actualDelivery, gaDays, diffDays, invalid: true };
+        }
+
+        gaAtDelivery.textContent = formatGestationalAge(gaDays);
+        differenceFromEdd.textContent = formatEddDifference(diffDays);
+        return { actualDelivery, gaDays, diffDays, invalid: false };
+    }
+
+    function createTimelinePoint(point) {
+        const item = document.createElement('article');
+        item.className = `timeline-point ${point.color}`;
+        item.style.left = `${point.position}%`;
+        item.innerHTML = `
+            <span class="point-marker" aria-hidden="true"></span>
+            <div class="point-card">
+                <span class="point-label">${point.label}</span>
+                <strong>${point.date}</strong>
+                ${point.ga ? `<small>${point.ga}</small>` : ''}
+            </div>
+        `;
+        return item;
+    }
+
+    function renderTimeline(result, delivery) {
+        timelinePoints.innerHTML = '';
+        timeline.hidden = false;
+        timelineEmpty.hidden = true;
+
+        const points = [
+            {
+                label: 'Pregnancy Start',
+                date: formatDate(result.pregnancyStart),
+                ga: '0w 0d',
+                position: 0,
+                color: 'green'
+            }
+        ];
+
+        if (result.referenceDate) {
+            const refDays = dayDiff(result.pregnancyStart, result.referenceDate);
+            points.push({
+                label: 'Reference Date',
+                date: formatDate(result.referenceDate),
+                ga: formatGestationalAge(refDays),
+                position: Math.min(100, Math.max(0, (refDays / PREGNANCY_DAYS) * 100)),
+                color: 'blue'
+            });
+        }
+
+        if (delivery && !delivery.invalid) {
+            points.push({
+                label: 'Actual Delivery',
+                date: formatDate(delivery.actualDelivery),
+                ga: formatGestationalAge(delivery.gaDays),
+                position: Math.min(100, Math.max(0, (delivery.gaDays / PREGNANCY_DAYS) * 100)),
+                color: 'purple'
+            });
+        }
+
+        points.push({
+            label: 'EDD',
+            date: formatDate(result.eddDate),
+            ga: '40w 0d',
+            position: 100,
+            color: 'pink'
+        });
+
+        points.forEach((point) => timelinePoints.appendChild(createTimelinePoint(point)));
+    }
+
+    function calculateAndRender() {
+        const result = validateAndCalculate();
+        if (!result) {
+            currentResult = null;
+            clearDeliveryOutputs();
+            clearTimeline();
+            return;
+        }
+
+        currentResult = result;
+        const delivery = updateDeliveryOutputs(result);
+        renderTimeline(result, delivery);
+        setMessage(`EDD calculated: ${formatDate(result.eddDate)}.`, 'success');
+    }
+
+    methodInputs.forEach((input) => {
+        input.addEventListener('change', () => setMethod(input.value));
     });
 
-    setZeroBtn.addEventListener('click', () => {
-        weeksInput.value = '0';
-        daysInput.value = '0';
-        calculateEDD();
+    calculateBtn.addEventListener('click', calculateAndRender);
+
+    actualDeliveryInput.addEventListener('input', () => {
+        if (currentResult) {
+            const delivery = updateDeliveryOutputs(currentResult);
+            renderTimeline(currentResult, delivery);
+        } else {
+            clearDeliveryOutputs();
+        }
     });
 
-    hideResult();
+    resetBtn.addEventListener('click', () => {
+        window.setTimeout(() => {
+            document.querySelector('input[name="eddMethod"][value="method1"]').checked = true;
+            setMethod('method1');
+            setMessage('');
+        }, 0);
+    });
+
+    setMethod('method1');
 </script>
 
 </body>
