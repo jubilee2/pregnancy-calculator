@@ -143,7 +143,7 @@
             });
             const formattedEDDDate = dateFormatter.format(eddDate);
             const formattedLMPDate = dateFormatter.format(lmpDate);
-            let resultHtml = `Your Estimated Due Date is:<br><span style="color:#007BFF; font-size: 1.25em; font-weight: bold;">${formattedEDDDate}</span>`;
+            let resultHtml = `Your Estimated Due Date is:<br><span class="result-date edd">${formattedEDDDate}</span>`;
 
             let actualDeliveryDate = null;
             let actualGA = null;
@@ -169,13 +169,13 @@
                             const aDays = diffDays % 7;
                             actualGA = `${aWeeks} weeks, ${aDays} days`;
                             const formattedActualDate = dateFormatter.format(actualDeliveryDate);
-                            resultHtml += `<br><br>Actual Delivery Date:<br><span style="color:#28a745; font-size: 1.2em;">${formattedActualDate}</span><br><span style="font-size: 0.9em; color: #555;">(GA: ${actualGA})</span>`;
+                            resultHtml += `<br><br>Actual Delivery Date:<br><span class="result-date actual">${formattedActualDate}</span><br><span class="result-ga">GA: ${actualGA}</span>`;
                         }
                     }
                 }
             }
 
-            resultHtml += `<br><br>Last Menstrual Period (LMP):<br><span style="color:#6f42c1; font-size: 1.25em; font-weight: bold;">${formattedLMPDate}</span>`;
+            resultHtml += `<br><br>Last Menstrual Period (LMP):<br><span class="result-date lmp">${formattedLMPDate}</span>`;
 
             showResult(resultHtml);
             renderTimeline(lmpDate, refDate, eddDate, actualDeliveryDate, actualGA);
