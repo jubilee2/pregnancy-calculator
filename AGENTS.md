@@ -2,12 +2,13 @@
 
 ## Project Overview
 - This repository contains a single-page static pregnancy estimated due date (EDD) calculator.
-- The application is implemented in `index.html` with inline CSS and JavaScript.
+- The application is implemented in `index.html` and `styles.css` with inline JavaScript.
 - The project is hosted on GitHub Pages.
 
 ## Development Guidelines
 - Keep the app dependency-free unless a task explicitly requires adding tooling or packages.
 - Preserve the static-site structure so the calculator can be opened directly in a browser.
+- For local development, you can use `python3 -m http.server 8080` to start a small HTTP server if needed.
 - Use semantic HTML where practical and keep user-facing copy clear and concise.
 - Keep JavaScript readable and avoid wrapping imports in `try`/`catch` blocks.
 

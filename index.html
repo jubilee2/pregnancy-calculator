@@ -1,134 +1,291 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EDD Calculator</title>
+    <title>Pregnancy & Due Date Calculator</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 
-<div class="container">
-    <h2>EDD Calculator</h2>
-    <div class="form-group">
-        <label for="refDate">Reference Date</label>
-        <input type="date" id="refDate" required>
+    <div class="container">
+        <h2>Pregnancy & Due Date Calculator</h2>
+        <div class="form-group">
+            <label for="refDate" id="refDateLabel">Reference Date</label>
+            <input type="date" id="refDate" required>
+        </div>
+        <div class="form-group">
+            <label>Calculation Mode</label>
+            <div class="button-group">
+                <button type="button" id="refBtn" class="active">Reference Date</button>
+                <button type="button" id="eddBtn">EDD</button>
+                <button type="button" id="lmpBtn">LMP</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="weeks">Weeks Pregnant</label>
+            <input type="number" id="weeks" min="0" max="42" placeholder="e.g., 12" required>
+        </div>
+        <div class="form-group">
+            <label for="days">Days Pregnant</label>
+            <input type="number" id="days" min="0" max="6" placeholder="e.g., 3" required>
+        </div>
+        <div class="form-group">
+            <label for="actualDate">Actual Delivery Date (Optional)</label>
+            <input type="date" id="actualDate">
+        </div>
+        <p class="hint">Enter a reference date, weeks, and days to calculate automatically.</p>
+        <div class="result" id="resultDiv" aria-live="polite">
+            <span id="eddOutput"></span>
+            <div id="timelineContainer"></div>
+        </div>
     </div>
-    <div class="form-group">
-        <label for="weeks">Weeks Pregnant</label>
-        <input type="number" id="weeks" min="0" max="42" placeholder="e.g., 12" required>
-    </div>
-    <div class="form-group">
-        <label for="days">Days Pregnant</label>
-        <input type="number" id="days" min="0" max="6" placeholder="e.g., 3" required>
-    </div>
-    <button type="button" id="setZeroBtn">Set week and day to 0</button>
-    <p class="hint">Enter a reference date, weeks, and days to calculate automatically.</p>
-    <div class="result" id="resultDiv" aria-live="polite">
-        <span id="eddOutput"></span>
-    </div>
-</div>
 
-<script>
-    const refDateInput = document.getElementById('refDate');
-    const weeksInput = document.getElementById('weeks');
-    const daysInput = document.getElementById('days');
-    const resultDiv = document.getElementById('resultDiv');
-    const eddOutput = document.getElementById('eddOutput');
-    const setZeroBtn = document.getElementById('setZeroBtn');
+    <script>
+        const refDateInput = document.getElementById('refDate');
+        const refDateLabel = document.getElementById('refDateLabel');
+        const weeksInput = document.getElementById('weeks');
+        const daysInput = document.getElementById('days');
+        const actualDateInput = document.getElementById('actualDate');
+        const resultDiv = document.getElementById('resultDiv');
+        const eddOutput = document.getElementById('eddOutput');
 
-    function hideResult() {
-        eddOutput.innerHTML = '';
-        resultDiv.style.display = 'none';
-    }
-
-    function showResult(message) {
-        eddOutput.innerHTML = message;
-        resultDiv.style.display = 'block';
-    }
-
-    function calculateEDD() {
-        const dateInput = refDateInput.value.trim();
-        const weeksValue = weeksInput.value;
-        const daysValue = daysInput.value;
-
-        if (!dateInput && weeksValue === '' && daysValue === '') {
-            hideResult();
-            return;
+        const refBtn = document.getElementById('refBtn');
+        const lmpBtn = document.getElementById('lmpBtn');
+        const eddBtn = document.getElementById('eddBtn');
+        const timelineContainer = document.getElementById('timelineContainer');
+        function hideResult() {
+            eddOutput.innerHTML = '';
+            if (timelineContainer) timelineContainer.innerHTML = '';
+            resultDiv.style.display = 'none';
         }
 
-        if (!dateInput || weeksValue === '' || daysValue === '') {
-            showResult('Enter all three fields to see your Estimated Due Date.');
-            return;
+        function showResult(message) {
+            eddOutput.innerHTML = message;
+            resultDiv.style.display = 'block';
         }
 
-        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-        if (!dateRegex.test(dateInput)) {
-            showResult('Please enter the date in yyyy-mm-dd format.');
-            return;
+        function calculateEDD() {
+            const dateInput = refDateInput.value.trim();
+            const weeksValue = weeksInput.value;
+            const daysValue = daysInput.value;
+
+            if (!dateInput && weeksValue === '' && daysValue === '') {
+                hideResult();
+                return;
+            }
+
+            if (!dateInput || weeksValue === '' || daysValue === '') {
+                if (lmpBtn.classList.contains('active')) {
+                    showResult('Please enter your LMP Date.');
+                } else if (eddBtn.classList.contains('active')) {
+                    showResult('Please enter your EDD.');
+                } else {
+                    showResult('Enter all three fields to see your Estimated Due Date.');
+                }
+                return;
+            }
+
+            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (!dateRegex.test(dateInput)) {
+                showResult('Please enter the date in yyyy-mm-dd format.');
+                return;
+            }
+
+            // Parse as a local date to avoid timezone offset issues.
+            const [dateYear, dateMonth, dateDay] = dateInput.split('-').map(Number);
+            const refDate = new Date(dateYear, dateMonth - 1, dateDay);
+            if (
+                isNaN(refDate.getTime()) ||
+                refDate.getFullYear() !== dateYear ||
+                refDate.getMonth() !== dateMonth - 1 ||
+                refDate.getDate() !== dateDay
+            ) {
+                showResult('Please enter a valid date.');
+                return;
+            }
+
+            const weeks = parseInt(weeksValue, 10);
+            const days = parseInt(daysValue, 10);
+            if (Number.isNaN(weeks) || weeks < 0 || weeks > 42) {
+                showResult('Weeks pregnant must be between 0 and 42.');
+                return;
+            }
+
+            if (Number.isNaN(days) || days < 0 || days > 6) {
+                showResult('Days pregnant must be between 0 and 6.');
+                return;
+            }
+
+            // Calculate days to subtract: (week * 7 + days)
+            const daysPregnant = (weeks * 7) + days;
+
+            // 40 weeks = 280 days
+            // Logic: date - (week*7 + days) + 40 weeks
+            // In days: date - daysPregnant + 280
+            const totalDaysToAdd = 280 - daysPregnant;
+
+            // Apply to date
+            const eddDate = new Date(refDate);
+            eddDate.setDate(eddDate.getDate() + totalDaysToAdd);
+
+            // Calculate LMP (Last Menstrual Period) which is 0 weeks 0 days
+            const lmpDate = new Date(refDate);
+            lmpDate.setDate(lmpDate.getDate() - daysPregnant);
+
+            // Format output to match local date format
+            const dateFormatter = new Intl.DateTimeFormat(undefined, {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+            const formattedEDDDate = dateFormatter.format(eddDate);
+            const formattedLMPDate = dateFormatter.format(lmpDate);
+            let resultHtml = `Your Estimated Due Date is:<br><span class="result-date edd">${formattedEDDDate}</span>`;
+
+            let actualDeliveryDate = null;
+            let actualGA = null;
+
+            const actualDateValue = actualDateInput.value.trim();
+            if (actualDateValue) {
+                const actualDateRegex = /^\d{4}-\d{2}-\d{2}$/;
+                if (actualDateRegex.test(actualDateValue)) {
+                    const [aYear, aMonth, aDay] = actualDateValue.split('-').map(Number);
+                    const aDate = new Date(aYear, aMonth - 1, aDay);
+                    if (
+                        !isNaN(aDate.getTime()) &&
+                        aDate.getFullYear() === aYear &&
+                        aDate.getMonth() === aMonth - 1 &&
+                        aDate.getDate() === aDay
+                    ) {
+                        actualDeliveryDate = aDate;
+                        const diffTime = Math.abs(aDate - lmpDate);
+                        // allow negative days if somehow actual delivery is before LMP, but normally we use standard diff
+                        const diffDays = Math.round((aDate - lmpDate) / (1000 * 60 * 60 * 24));
+                        if (diffDays >= 0) {
+                            const aWeeks = Math.floor(diffDays / 7);
+                            const aDays = diffDays % 7;
+                            actualGA = `${aWeeks} weeks, ${aDays} days`;
+                            const formattedActualDate = dateFormatter.format(actualDeliveryDate);
+                            resultHtml += `<br><br>Actual Delivery Date:<br><span class="result-date actual">${formattedActualDate}</span><br><span class="result-ga">GA: ${actualGA}</span>`;
+                        }
+                    }
+                }
+            }
+
+            resultHtml += `<br><br>Last Menstrual Period (LMP):<br><span class="result-date lmp">${formattedLMPDate}</span>`;
+
+            showResult(resultHtml);
+            renderTimeline(lmpDate, refDate, eddDate, actualDeliveryDate, actualGA);
         }
 
-        // Parse as a local date to avoid timezone offset issues.
-        const [dateYear, dateMonth, dateDay] = dateInput.split('-').map(Number);
-        const refDate = new Date(dateYear, dateMonth - 1, dateDay);
-        if (
-            isNaN(refDate.getTime()) ||
-            refDate.getFullYear() !== dateYear ||
-            refDate.getMonth() !== dateMonth - 1 ||
-            refDate.getDate() !== dateDay
-        ) {
-            showResult('Please enter a valid date.');
-            return;
-        }
-
-        const weeks = parseInt(weeksValue, 10);
-        const days = parseInt(daysValue, 10);
-        if (Number.isNaN(weeks) || weeks < 0 || weeks > 42) {
-            showResult('Weeks pregnant must be between 0 and 42.');
-            return;
-        }
-
-        if (Number.isNaN(days) || days < 0 || days > 6) {
-            showResult('Days pregnant must be between 0 and 6.');
-            return;
-        }
-
-        // Calculate days to subtract: (week * 7 + days)
-        const daysPregnant = (weeks * 7) + days;
-
-        // 40 weeks = 280 days
-        // Logic: date - (week*7 + days) + 40 weeks
-        // In days: date - daysPregnant + 280
-        const totalDaysToAdd = 280 - daysPregnant;
-
-        // Apply to date
-        const eddDate = new Date(refDate);
-        eddDate.setDate(eddDate.getDate() + totalDaysToAdd);
-
-        // Format output to match local date format
-        // Setting { year: 'numeric', month: '2-digit', day: '2-digit' }
-        // to closely mimic how native date inputs often display.
-        const formattedDate = eddDate.toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
+        [refDateInput, weeksInput, daysInput, actualDateInput].forEach((input) => {
+            input.addEventListener('input', calculateEDD);
         });
 
-        showResult(`Your Estimated Due Date is:<br><br><span class="edd-date">${formattedDate}</span>`);
-    }
+        function setMode(mode) {
+            refBtn.classList.remove('active');
+            lmpBtn.classList.remove('active');
+            eddBtn.classList.remove('active');
 
-    [refDateInput, weeksInput, daysInput].forEach((input) => {
-        input.addEventListener('input', calculateEDD);
-    });
+            if (mode === 'lmp') {
+                lmpBtn.classList.add('active');
+                weeksInput.value = '0';
+                daysInput.value = '0';
+                weeksInput.disabled = true;
+                daysInput.disabled = true;
+                refDateLabel.textContent = 'LMP (Last Menstrual Period) Date';
+            } else if (mode === 'edd') {
+                eddBtn.classList.add('active');
+                weeksInput.value = '40';
+                daysInput.value = '0';
+                weeksInput.disabled = true;
+                daysInput.disabled = true;
+                refDateLabel.textContent = 'Estimated Due Date (EDD)';
+            } else {
+                refBtn.classList.add('active');
+                weeksInput.disabled = false;
+                daysInput.disabled = false;
+                refDateLabel.textContent = 'Reference Date';
+            }
+            calculateEDD();
+        }
 
-    setZeroBtn.addEventListener('click', () => {
-        weeksInput.value = '0';
-        daysInput.value = '0';
-        calculateEDD();
-    });
+        refBtn.addEventListener('click', () => setMode('ref'));
+        lmpBtn.addEventListener('click', () => setMode('lmp'));
+        eddBtn.addEventListener('click', () => setMode('edd'));
 
-    hideResult();
-</script>
+        function renderTimeline(lmp, ref, edd, actual, actualGA) {
+            timelineContainer.innerHTML = '';
+
+            const timelineLine = document.createElement('div');
+            timelineLine.className = 'timeline-line';
+            timelineContainer.appendChild(timelineLine);
+
+            const minTime = lmp.getTime();
+            const maxTime = actual && actual > edd ? actual.getTime() : edd.getTime();
+            const duration = maxTime - minTime;
+
+            const dateFormatter = new Intl.DateTimeFormat(undefined, {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+
+            function createPoint(date, className, labelHtml, isBottom) {
+                let percentage = 15;
+                if (duration > 0) {
+                    percentage = 15 + ((date.getTime() - minTime) / duration) * 70;
+                }
+
+                const marker = document.createElement('div');
+                marker.className = `timeline-marker ${className}`;
+                marker.style.left = `${percentage}%`;
+
+                if (labelHtml) {
+                    const label = document.createElement('div');
+                    label.className = `timeline-label ${isBottom ? 'bottom' : 'top'}`;
+                    label.innerHTML = labelHtml;
+                    marker.appendChild(label);
+                }
+
+                timelineContainer.appendChild(marker);
+            }
+
+            // 1. LMP Point (Bottom)
+            const lmpLabel = `LMP (0w 0d)<br><span class="timeline-date lmp">${dateFormatter.format(lmp)}</span>`;
+            createPoint(lmp, 'lmp-date', lmpLabel, true);
+
+            // 2. EDD Point (Bottom)
+            const eddLabel = `EDD (40w 0d)<br><span class="timeline-date edd">${dateFormatter.format(edd)}</span>`;
+            createPoint(edd, 'edd-date', eddLabel, true);
+
+            // 3. Reference Date Point (No label, just a dot)
+            createPoint(ref, 'reference-date', null, false);
+
+            // 4. Actual Delivery Point (Top, if present)
+            if (actual) {
+                let labelActual = 'Delivered';
+                const formattedActualDate = dateFormatter.format(actual);
+                if (actualGA) {
+                    const match = actualGA.match(/(\d+)\s+weeks,\s+(\d+)\s+days/);
+                    if (match) {
+                        labelActual += `<br><span class="timeline-date actual">${formattedActualDate}</span>${match[1]}w ${match[2]}d`;
+                    } else {
+                        labelActual += `<br><span class="timeline-date actual">${formattedActualDate}</span>(${actualGA})`;
+                    }
+                } else {
+                    labelActual += `<br><span class="timeline-date actual">${formattedActualDate}</span>`;
+                }
+                createPoint(actual, 'actual-delivery', labelActual, false);
+            }
+        }
+
+        hideResult();
+    </script>
 
 </body>
+
 </html>
