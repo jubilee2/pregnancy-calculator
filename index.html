@@ -30,7 +30,6 @@
     <p class="hint">Enter a reference date, weeks, and days to calculate automatically.</p>
     <div class="result" id="resultDiv" aria-live="polite">
         <span id="eddOutput"></span>
-        <div id="timelineContainer"></div>
     </div>
 </div>
 
@@ -41,12 +40,9 @@
     const actualDateInput = document.getElementById('actualDate');
     const resultDiv = document.getElementById('resultDiv');
     const eddOutput = document.getElementById('eddOutput');
-    const timelineContainer = document.getElementById('timelineContainer');
     const setZeroBtn = document.getElementById('setZeroBtn');
-
     function hideResult() {
         eddOutput.innerHTML = '';
-        timelineContainer.innerHTML = '';
         resultDiv.style.display = 'none';
     }
 
@@ -157,67 +153,6 @@
         }
 
         showResult(resultHtml);
-        renderTimeline(lmpDate, refDate, eddDate, actualDeliveryDate, weeks, days, actualGA);
-    }
-
-    function renderTimeline(lmp, ref, edd, actual, refWeeks, refDays, actualGA) {
-        timelineContainer.innerHTML = '';
-
-        const points = [
-            { date: lmp, label: 'Start<br><span class="date-text">(0w 0d)</span>', isActual: false },
-            { date: ref, label: `Reference<br><span class="date-text">(${refWeeks}w ${refDays}d)</span>`, isActual: false },
-            { date: edd, label: 'EDD<br><span class="date-text">(40w 0d)</span>', isActual: false }
-        ];
-
-        if (actual) {
-            let labelActual = 'Delivered';
-            if(actualGA) {
-                // Shorten actualGA to format (Xw Yd)
-                const match = actualGA.match(/(\d+)\s+weeks,\s+(\d+)\s+days/);
-                if(match) {
-                     labelActual += `<br><span class="date-text">(${match[1]}w ${match[2]}d)</span>`;
-                } else {
-                     labelActual += `<br><span class="date-text">(${actualGA})</span>`;
-                }
-            }
-            points.push({ date: actual, label: labelActual, isActual: true });
-        }
-
-        // Sort points by date
-        points.sort((a, b) => a.date - b.date);
-
-        const minTime = points[0].date.getTime();
-        const maxTime = points[points.length - 1].date.getTime();
-
-        // Calculate positions (5% to 95%)
-        const timelineLine = document.createElement('div');
-        timelineLine.className = 'timeline-line';
-        timelineContainer.appendChild(timelineLine);
-
-        const duration = maxTime - minTime;
-
-        points.forEach((point, index) => {
-            let percentage;
-            if (duration === 0) {
-                percentage = 50;
-            } else {
-                percentage = 5 + ((point.date.getTime() - minTime) / duration) * 90;
-            }
-
-            const marker = document.createElement('div');
-            marker.className = 'timeline-marker';
-            if (point.isActual) {
-                marker.classList.add('actual-delivery');
-            }
-            marker.style.left = `${percentage}%`;
-
-            const label = document.createElement('div');
-            label.className = `timeline-label ${index % 2 === 0 ? 'bottom' : 'top'}`;
-            label.innerHTML = point.label;
-
-            marker.appendChild(label);
-            timelineContainer.appendChild(marker);
-        });
     }
 
     [refDateInput, weeksInput, daysInput, actualDateInput].forEach((input) => {
