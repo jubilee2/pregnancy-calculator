@@ -43,19 +43,34 @@ input[type="date"] {
     font-size: 0.9em;
     text-align: center;
 }
-#setZeroBtn {
-    width: 100%;
+.button-group {
+    display: flex;
+    gap: 10px;
+}
+.button-group button {
+    flex: 1;
     padding: 10px;
-    margin-bottom: 15px;
-    background-color: #0056b3;
-    color: white;
-    border: none;
+    background-color: #f8f9fa;
+    color: #495057;
+    border: 1px solid #ced4da;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 1em;
+    font-size: 0.9em;
+    font-weight: bold;
+    transition: all 0.2s ease;
 }
-#setZeroBtn:hover {
-    background-color: #004085;
+.button-group button:hover {
+    background-color: #e2e6ea;
+}
+.button-group button.active {
+    background-color: #0056b3;
+    color: white;
+    border-color: #0056b3;
+}
+input:disabled {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+    opacity: 0.7;
 }
 .result {
     margin-top: 20px;
