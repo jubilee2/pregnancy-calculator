@@ -83,4 +83,71 @@ input:disabled {
     display: none;
 }
 
+/* Timeline styles */
+#timelineContainer {
+    margin-top: 60px;
+    margin-bottom: 60px;
+    position: relative;
+    height: 80px;
+    width: 100%;
+    box-sizing: border-box;
+}
+.timeline-line {
+    position: absolute;
+    top: 50%;
+    left: 5%;
+    right: 5%;
+    height: 4px;
+    background-color: #ccc;
+    transform: translateY(-50%);
+    border-radius: 2px;
+}
+.timeline-marker {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 14px;
+    height: 14px;
+    background-color: #007BFF;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 0 1px #007BFF;
+    z-index: 2;
+}
+.timeline-marker.actual-delivery {
+    background-color: #28a745;
+    box-shadow: 0 0 0 1px #28a745;
+}
+.timeline-marker.reference-date {
+    background-color: #fd7e14;
+    box-shadow: 0 0 0 1px #fd7e14;
+    width: 10px;
+    height: 10px;
+    z-index: 1;
+}
+.timeline-label {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8em;
+    color: #555;
+    white-space: nowrap;
+    text-align: center;
+    line-height: 1.25;
+}
+.timeline-label.top {
+    bottom: 100%;
+    margin-bottom: 10px;
+}
+.timeline-label.bottom {
+    top: 100%;
+    margin-top: 10px;
+}
+.timeline-label .date-text {
+    font-weight: normal;
+    font-size: 0.9em;
+    color: #777;
+    display: block;
+}
+
 
