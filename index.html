@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EDD Calculator</title>
+    <title>Pregnancy & Due Date Calculator</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
     <div class="container">
-        <h2>EDD Calculator</h2>
+        <h2>Pregnancy & Due Date Calculator</h2>
         <div class="form-group">
             <label for="refDate" id="refDateLabel">Reference Date</label>
             <input type="date" id="refDate" required>
@@ -235,9 +235,9 @@
             });
 
             function createPoint(date, className, labelHtml, isBottom) {
-                let percentage = 5;
+                let percentage = 15;
                 if (duration > 0) {
-                    percentage = 5 + ((date.getTime() - minTime) / duration) * 90;
+                    percentage = 15 + ((date.getTime() - minTime) / duration) * 70;
                 }
 
                 const marker = document.createElement('div');
@@ -255,11 +255,11 @@
             }
 
             // 1. LMP Point (Bottom)
-            const lmpLabel = `LMP<br><span class="date-text">${dateFormatter.format(lmp)}</span><br><span class="date-text">(0w 0d)</span>`;
+            const lmpLabel = `LMP (0w 0d)<br><span class="timeline-date lmp">${dateFormatter.format(lmp)}</span>`;
             createPoint(lmp, 'lmp-date', lmpLabel, true);
 
             // 2. EDD Point (Bottom)
-            const eddLabel = `EDD<br><span class="date-text">${dateFormatter.format(edd)}</span><br><span class="date-text">(40w 0d)</span>`;
+            const eddLabel = `EDD (40w 0d)<br><span class="timeline-date edd">${dateFormatter.format(edd)}</span>`;
             createPoint(edd, 'edd-date', eddLabel, true);
 
             // 3. Reference Date Point (No label, just a dot)
@@ -272,12 +272,12 @@
                 if (actualGA) {
                     const match = actualGA.match(/(\d+)\s+weeks,\s+(\d+)\s+days/);
                     if (match) {
-                        labelActual += `<br><span class="date-text">${formattedActualDate}</span><br><span class="date-text">(${match[1]}w ${match[2]}d)</span>`;
+                        labelActual += `<br><span class="timeline-date actual">${formattedActualDate}</span>${match[1]}w ${match[2]}d`;
                     } else {
-                        labelActual += `<br><span class="date-text">${formattedActualDate}</span><br><span class="date-text">(${actualGA})</span>`;
+                        labelActual += `<br><span class="timeline-date actual">${formattedActualDate}</span>(${actualGA})`;
                     }
                 } else {
-                    labelActual += `<br><span class="date-text">${formattedActualDate}</span>`;
+                    labelActual += `<br><span class="timeline-date actual">${formattedActualDate}</span>`;
                 }
                 createPoint(actual, 'actual-delivery', labelActual, false);
             }
