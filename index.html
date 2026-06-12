@@ -36,7 +36,10 @@
             <label for="actualDate">Actual Delivery Date (Optional)</label>
             <input type="date" id="actualDate">
         </div>
-        <p class="hint">Enter a reference date, weeks, and days to calculate automatically.</p>
+        <div class="hint">
+            <p><strong>Guide:</strong> If you have the EGA during the pregnancy, you can use that to get EDD. Please enter the Reference date and Gestational age (week/day), then it will return your estimated delivery date based on 40 weeks.</p>
+            <p><strong>Guide:</strong> If you provide the Actual Delivery Date, it will return the Gestational age (week/day) on the Actual Delivery Date.</p>
+        </div>
         <div class="result" id="resultDiv" aria-live="polite">
             <span id="eddOutput"></span>
             <div id="timelineContainer"></div>
