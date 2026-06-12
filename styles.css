@@ -4,7 +4,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    height: 100vh;
     margin: 0;
 }
 .container {
@@ -12,7 +12,7 @@ body {
     padding: 20px 30px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    max-width: 400px;
+    max-width: 600px;
     width: 100%;
 }
 h2 {
@@ -67,7 +67,60 @@ input[type="date"] {
     color: #333;
     display: none;
 }
-.edd-date {
-    color: #007BFF;
-    font-size: 1.2em;
+
+/* Timeline styles */
+#timelineContainer {
+    margin-top: 40px;
+    margin-bottom: 30px;
+    position: relative;
+    height: 60px;
+    width: 100%;
+}
+.timeline-line {
+    position: absolute;
+    top: 50%;
+    left: 5%;
+    right: 5%;
+    height: 4px;
+    background-color: #ccc;
+    transform: translateY(-50%);
+    border-radius: 2px;
+}
+.timeline-marker {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 14px;
+    height: 14px;
+    background-color: #007BFF;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 0 1px #007BFF;
+    z-index: 1;
+}
+.timeline-marker.actual-delivery {
+    background-color: #28a745;
+    box-shadow: 0 0 0 1px #28a745;
+}
+.timeline-label {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8em;
+    color: #555;
+    white-space: nowrap;
+    text-align: center;
+}
+.timeline-label.top {
+    bottom: 100%;
+    margin-bottom: 8px;
+}
+.timeline-label.bottom {
+    top: 100%;
+    margin-top: 8px;
+}
+.timeline-label .date-text {
+    font-weight: normal;
+    font-size: 0.9em;
+    color: #777;
 }
