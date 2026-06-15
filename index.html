@@ -195,7 +195,9 @@
             calculateEDD();
         };
 
-        ['ref', 'lmp', 'edd'].forEach(mode => window[`${mode}Btn`].addEventListener('click', () => setMode(mode)));
+        refBtn.addEventListener('click', () => setMode('ref'));
+        lmpBtn.addEventListener('click', () => setMode('lmp'));
+        eddBtn.addEventListener('click', () => setMode('edd'));
 
         function renderTimeline(lmp, ref, edd, actual, actualGA) {
             timelineContainer.innerHTML = '';
