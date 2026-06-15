@@ -47,28 +47,20 @@
     </div>
 
     <script>
-        const refDateInput = document.getElementById('refDate');
-        const refDateLabel = document.getElementById('refDateLabel');
-        const weeksInput = document.getElementById('weeks');
-        const daysInput = document.getElementById('days');
-        const actualDateInput = document.getElementById('actualDate');
-        const resultDiv = document.getElementById('resultDiv');
-        const eddOutput = document.getElementById('eddOutput');
+        const $ = id => document.getElementById(id);
+        const [refDateInput, refDateLabel, weeksInput, daysInput, actualDateInput, resultDiv, eddOutput, refBtn, lmpBtn, eddBtn, timelineContainer] =
+            ['refDate', 'refDateLabel', 'weeks', 'days', 'actualDate', 'resultDiv', 'eddOutput', 'refBtn', 'lmpBtn', 'eddBtn', 'timelineContainer'].map($);
 
-        const refBtn = document.getElementById('refBtn');
-        const lmpBtn = document.getElementById('lmpBtn');
-        const eddBtn = document.getElementById('eddBtn');
-        const timelineContainer = document.getElementById('timelineContainer');
-        function hideResult() {
+        const hideResult = () => {
             eddOutput.innerHTML = '';
             if (timelineContainer) timelineContainer.innerHTML = '';
             resultDiv.style.display = 'none';
-        }
+        };
 
-        function showResult(message) {
+        const showResult = message => {
             eddOutput.innerHTML = message;
             resultDiv.style.display = 'block';
-        }
+        };
 
         function calculateEDD() {
             const dateInput = refDateInput.value.trim();
@@ -184,37 +176,27 @@
             renderTimeline(lmpDate, refDate, eddDate, actualDeliveryDate, actualGA);
         }
 
-        [refDateInput, weeksInput, daysInput, actualDateInput].forEach((input) => {
-            input.addEventListener('input', calculateEDD);
-        });
+        [refDateInput, weeksInput, daysInput, actualDateInput].forEach(input => input.addEventListener('input', calculateEDD));
 
-        function setMode(mode) {
-            refBtn.classList.remove('active');
-            lmpBtn.classList.remove('active');
-            eddBtn.classList.remove('active');
+        const setMode = mode => {
+            [refBtn, lmpBtn, eddBtn].forEach(btn => btn.classList.remove('active'));
+            const isRef = mode === 'ref';
 
+            weeksInput.disabled = daysInput.disabled = !isRef;
             if (mode === 'lmp') {
                 lmpBtn.classList.add('active');
-                weeksInput.value = '0';
-                daysInput.value = '0';
-                weeksInput.disabled = true;
-                daysInput.disabled = true;
+                weeksInput.value = daysInput.value = '0';
                 refDateLabel.textContent = 'LMP (Last Menstrual Period) Date';
             } else if (mode === 'edd') {
                 eddBtn.classList.add('active');
-                weeksInput.value = '40';
-                daysInput.value = '0';
-                weeksInput.disabled = true;
-                daysInput.disabled = true;
+                weeksInput.value = '40'; daysInput.value = '0';
                 refDateLabel.textContent = 'Estimated Due Date (EDD)';
             } else {
                 refBtn.classList.add('active');
-                weeksInput.disabled = false;
-                daysInput.disabled = false;
                 refDateLabel.textContent = 'Reference Date';
             }
             calculateEDD();
-        }
+        };
 
         refBtn.addEventListener('click', () => setMode('ref'));
         lmpBtn.addEventListener('click', () => setMode('lmp'));
